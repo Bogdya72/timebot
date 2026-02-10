@@ -33,6 +33,9 @@ WEBAPP_URL = os.environ.get("WEBAPP_URL", "http://localhost:8080")
 DEBUG_ALLOW = os.environ.get("DEBUG_ALLOW", "1") == "1"
 WEB_HOST = os.environ.get("WEB_HOST", "0.0.0.0")
 WEB_PORT = int(os.environ.get("PORT", os.environ.get("WEB_PORT", "8080")))
+USE_WEBHOOK = os.environ.get("USE_WEBHOOK", "0") == "1"
+WEBHOOK_PATH = os.environ.get("WEBHOOK_PATH", "/webhook")
+WEBHOOK_URL = os.environ.get("WEBHOOK_URL", WEBAPP_URL.rstrip("/") + WEBHOOK_PATH)
 
 SCHEMA_VERSION = "farm-v2"
 
@@ -857,8 +860,11 @@ async def handle_sabotage(request: web.Request) -> web.Response:
 web_runner: Optional[web.AppRunner] = None
 
 
-async def start_web_server() -> web.AppRunner:
+def create_app(dp: Dispatcher, bot: Bot) -> web.Application:
     app = web.Application()
+    app["dp"] = dp
+    app["bot"] = bot
+
     app.router.add_get("/", lambda request: web.FileResponse(os.path.join(WEBAPP_DIR, "index.html")))
     app.router.add_get("/styles.css", lambda request: web.FileResponse(os.path.join(WEBAPP_DIR, "styles.css")))
     app.router.add_get("/app.js", lambda request: web.FileResponse(os.path.join(WEBAPP_DIR, "app.js")))
@@ -873,6 +879,19 @@ async def start_web_server() -> web.AppRunner:
     app.router.add_post("/api/raid", handle_raid)
     app.router.add_post("/api/sabotage", handle_sabotage)
 
+    async def handle_webhook(request: web.Request) -> web.Response:
+        dp: Dispatcher = request.app["dp"]
+        data = await request.json()
+        update = types.Update(**data)
+        await dp.process_update(update)
+        return web.Response(text="ok")
+
+    app.router.add_post(WEBHOOK_PATH, handle_webhook)
+    return app
+
+
+async def start_web_server(dp: Dispatcher, bot: Bot) -> web.AppRunner:
+    app = create_app(dp, bot)
     runner = web.AppRunner(app)
     await runner.setup()
     site = web.TCPSite(runner, WEB_HOST, WEB_PORT)
@@ -913,8 +932,25 @@ def main():
 
     loop = asyncio.get_event_loop()
     loop.run_until_complete(init_db())
+
+    if USE_WEBHOOK:
+        app = create_app(dp, bot)
+
+        async def on_startup(app: web.Application):
+            await bot.set_webhook(WEBHOOK_URL)
+            print(f"[webhook] set to {WEBHOOK_URL}")
+
+        async def on_cleanup(app: web.Application):
+            await bot.delete_webhook(drop_pending_updates=True)
+            await bot.session.close()
+
+        app.on_startup.append(on_startup)
+        app.on_cleanup.append(on_cleanup)
+        web.run_app(app, host=WEB_HOST, port=WEB_PORT)
+        return
+
     global web_runner
-    web_runner = loop.run_until_complete(start_web_server())
+    web_runner = loop.run_until_complete(start_web_server(dp, bot))
 
     if os.environ.get("NO_RESTART") == "1":
         executor.start_polling(dp, skip_updates=True, loop=loop)
