@@ -20,7 +20,12 @@ from dotenv import load_dotenv
 
 load_dotenv("/Users/bogdanbogdanov/Desktop/TimeBot/.env")
 
-DB_PATH = os.environ.get("TIMEBOT_DB", "/Users/bogdanbogdanov/Desktop/TimeBot/timebot.sqlite")
+DEFAULT_DB = "/tmp/timebot.sqlite"
+DB_PATH = os.environ.get("TIMEBOT_DB", DEFAULT_DB)
+if not os.path.isabs(DB_PATH):
+    DB_PATH = os.path.abspath(DB_PATH)
+if not os.path.exists(os.path.dirname(DB_PATH)):
+    os.makedirs(os.path.dirname(DB_PATH), exist_ok=True)
 BOT_TOKEN = os.environ.get("BOT_TOKEN")
 WEBAPP_URL = os.environ.get("WEBAPP_URL", "http://localhost:8080")
 DEBUG_ALLOW = os.environ.get("DEBUG_ALLOW", "1") == "1"
