@@ -20,6 +20,8 @@ from dotenv import load_dotenv
 
 load_dotenv("/Users/bogdanbogdanov/Desktop/TimeBot/.env")
 
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+WEBAPP_DIR = os.path.abspath(os.path.join(BASE_DIR, "..", "webapp"))
 DEFAULT_DB = "/tmp/timebot.sqlite"
 DB_PATH = os.environ.get("TIMEBOT_DB", DEFAULT_DB)
 if not os.path.isabs(DB_PATH):
@@ -852,11 +854,14 @@ async def handle_sabotage(request: web.Request) -> web.Response:
     return web.json_response({"message": msg})
 
 
+web_runner: Optional[web.AppRunner] = None
+
+
 async def start_web_server() -> web.AppRunner:
     app = web.Application()
-    app.router.add_get("/", lambda request: web.FileResponse("/Users/bogdanbogdanov/Desktop/TimeBot/webapp/index.html"))
-    app.router.add_get("/styles.css", lambda request: web.FileResponse("/Users/bogdanbogdanov/Desktop/TimeBot/webapp/styles.css"))
-    app.router.add_get("/app.js", lambda request: web.FileResponse("/Users/bogdanbogdanov/Desktop/TimeBot/webapp/app.js"))
+    app.router.add_get("/", lambda request: web.FileResponse(os.path.join(WEBAPP_DIR, "index.html")))
+    app.router.add_get("/styles.css", lambda request: web.FileResponse(os.path.join(WEBAPP_DIR, "styles.css")))
+    app.router.add_get("/app.js", lambda request: web.FileResponse(os.path.join(WEBAPP_DIR, "app.js")))
 
     app.router.add_post("/api/state", handle_state)
     app.router.add_post("/api/plant", handle_plant)
@@ -908,7 +913,8 @@ def main():
 
     loop = asyncio.get_event_loop()
     loop.run_until_complete(init_db())
-    loop.run_until_complete(start_web_server())
+    global web_runner
+    web_runner = loop.run_until_complete(start_web_server())
 
     if os.environ.get("NO_RESTART") == "1":
         executor.start_polling(dp, skip_updates=True, loop=loop)
