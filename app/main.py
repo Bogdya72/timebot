@@ -915,6 +915,10 @@ def main():
     dp.register_message_handler(on_start, commands=["start"])
     dp.register_message_handler(on_text, content_types=types.ContentTypes.TEXT)
 
+    if os.environ.get("NO_RESTART") == "1":
+        executor.start_polling(dp, skip_updates=True, on_startup=on_startup, on_shutdown=on_shutdown)
+        return
+
     backoff = 1
     while True:
         try:
