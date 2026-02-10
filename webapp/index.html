@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Тихая ферма</title>
+    <link rel="stylesheet" href="/styles.css" />
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  </head>
+  <body>
+    <div class="app">
+      <header class="hero">
+        <div class="hero__overlay"></div>
+        <div class="hero__content">
+          <div class="badge">Реалистичная ферма · PvP‑рынок</div>
+          <h1>Тихая ферма</h1>
+          <p>Семена → рост → сбор → продажа. Экономика давит, ошибки стоят дорого.</p>
+        </div>
+      </header>
+
+      <section class="panel" id="status"></section>
+
+      <section class="grid">
+        <div class="card" id="fields">
+          <h2>Поля</h2>
+          <div class="plots" id="plots"></div>
+        </div>
+
+        <div class="card" id="storage">
+          <h2>Склад</h2>
+          <div id="storageList" class="list"></div>
+          <div class="hint">Порча: ~8%/час</div>
+        </div>
+
+        <div class="card" id="market">
+          <h2>Рынок</h2>
+          <div id="marketList" class="list"></div>
+        </div>
+
+        <div class="card" id="seeds">
+          <h2>Семена</h2>
+          <div id="seedList" class="list"></div>
+        </div>
+      </section>
+
+      <section class="actions">
+        <button class="btn" id="actionRaid">Набег</button>
+        <button class="btn" id="actionSabotage">Саботаж</button>
+        <button class="btn" id="actionSecurity">Усилить охрану</button>
+        <button class="btn" id="actionSubsidy">Субсидия</button>
+      </section>
+
+      <section class="modal" id="modal">
+        <div class="modal__card">
+          <div class="modal__title" id="modalTitle"></div>
+          <div class="modal__content" id="modalContent"></div>
+          <button class="btn" id="modalClose">Закрыть</button>
+        </div>
+      </section>
+    </div>
+
+    <script src="/app.js"></script>
+  </body>
+</html>

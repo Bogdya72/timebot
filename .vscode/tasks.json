@@ -1,0 +1,11 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "timebot:setup",
+      "type": "shell",
+      "command": "/Users/bogdanbogdanov/Desktop/TimeBot/run.sh",
+      "problemMatcher": []
+    }
+  ]
+}

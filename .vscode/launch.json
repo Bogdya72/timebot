@@ -1,0 +1,15 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "TimeBot: Run",
+      "type": "python",
+      "request": "launch",
+      "program": "/Users/bogdanbogdanov/Desktop/TimeBot/app/main.py",
+      "envFile": "/Users/bogdanbogdanov/Desktop/TimeBot/.env",
+      "python": "/Users/bogdanbogdanov/Desktop/TimeBot/.venv/bin/python",
+      "preLaunchTask": "timebot:setup",
+      "console": "integratedTerminal"
+    }
+  ]
+}
