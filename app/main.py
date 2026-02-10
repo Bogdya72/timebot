@@ -891,20 +891,6 @@ async def on_text(message: types.Message):
 
 # --- Runner ---
 
-web_runner: Optional[web.AppRunner] = None
-
-
-async def on_startup(dp: Dispatcher):
-    global web_runner
-    await init_db()
-    web_runner = await start_web_server()
-
-
-async def on_shutdown(dp: Dispatcher):
-    if web_runner:
-        await web_runner.cleanup()
-
-
 def main():
     if not BOT_TOKEN:
         raise RuntimeError("BOT_TOKEN env is required")
@@ -915,14 +901,18 @@ def main():
     dp.register_message_handler(on_start, commands=["start"])
     dp.register_message_handler(on_text, content_types=types.ContentTypes.TEXT)
 
+    loop = asyncio.get_event_loop()
+    loop.run_until_complete(init_db())
+    loop.run_until_complete(start_web_server())
+
     if os.environ.get("NO_RESTART") == "1":
-        executor.start_polling(dp, skip_updates=True, on_startup=on_startup, on_shutdown=on_shutdown)
+        executor.start_polling(dp, skip_updates=True, loop=loop)
         return
 
     backoff = 1
     while True:
         try:
-            executor.start_polling(dp, skip_updates=True, on_startup=on_startup, on_shutdown=on_shutdown)
+            executor.start_polling(dp, skip_updates=True, loop=loop)
             backoff = 1
         except NetworkError:
             time_to_sleep = min(60, backoff)
