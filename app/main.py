@@ -25,7 +25,7 @@ BOT_TOKEN = os.environ.get("BOT_TOKEN")
 WEBAPP_URL = os.environ.get("WEBAPP_URL", "http://localhost:8080")
 DEBUG_ALLOW = os.environ.get("DEBUG_ALLOW", "1") == "1"
 WEB_HOST = os.environ.get("WEB_HOST", "0.0.0.0")
-WEB_PORT = int(os.environ.get("WEB_PORT", "8080"))
+WEB_PORT = int(os.environ.get("PORT", os.environ.get("WEB_PORT", "8080")))
 
 SCHEMA_VERSION = "farm-v2"
 
